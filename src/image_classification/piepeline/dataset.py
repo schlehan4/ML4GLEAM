@@ -40,15 +40,16 @@ class CocoLoader(Dataset):
         return image, label
     
 class FitsSet(Dataset):
-    def __init__(self, img_folder, annotation_file, order, gamma, hep_variance, transform_method, transform=None):
+    def __init__(self, img_folder, annotation_file, order, gamma, transform_method, glob_min, glob_max, transform=None):
         self.img_folder = img_folder
         self.transform = transform
         self.order = order
         self.transform_method = transform_method
         self.gamma = gamma
-        self.variance = hep_variance
-        self.global_average_min = -0.0006134198629297316
-        self.global_average_max =  0.024582142010331154
+        self.global_average_min = glob_min
+        self.global_average_max =  glob_max
+        # self.global_average_min = -0.0006134198629297316
+        # self.global_average_max =  0.024582142010331154
         
         with open(annotation_file, 'r') as f:
             data = json.load(f)

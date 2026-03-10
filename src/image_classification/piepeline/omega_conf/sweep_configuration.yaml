@@ -5,7 +5,17 @@ metric:
   name: "score"
 
 parameters:
-
+  #Pysical Constants
+  #Global min and max pixel Value over all images
+  glob_min:
+    value: -0.0006134198629297316
+  glob_max:
+    value: 0.024582142010331154
+  
+  num_classes:
+    value: 6
+  
+  #Preprocessing
   transform_method:
     values: ["hep"] #hep,hzz, hhz, z_scale_min_max
   tansform_first: 
@@ -16,13 +26,8 @@ parameters:
     values: [10]
   gamma3: 
     values: [5]
-    
-  hep_variance1:
-    value: 6
-  hep_variance2:
-    value: 6
 
-    
+  #Model  
   model_architecture: 
     value: "EfficientNet"
   model_name: 
@@ -34,6 +39,7 @@ parameters:
   img_size:
     value: 300
 
+  #Hyperparamer and Training Components
   optimizer: 
     value: "ADAM"
   scheduler: 
@@ -58,6 +64,8 @@ parameters:
     # max: 0.1
   dropout:
     values: [0.4]
+  batch_size:
+    value: 32
 
   num_epochs_lastlayer:
     value: 1
@@ -72,16 +80,14 @@ parameters:
   device:
     value: "cuda"
 
+  #Logging
   enable_logging:
     value: True # enable logging to WandB
   run_on_cluster:
     value: True # change configs to run on cluster
   random_seed:
     value: 42
-  num_classes:
-    value: 6
-  batch_size:
-    value: 32
+
 
 
 

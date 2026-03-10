@@ -7,6 +7,17 @@ metric:
 
 
 parameters:
+  #Pysical Constants
+  #Global min and max pixel Value over all images
+  glob_min:
+    value: -0.0006134198629297316
+  glob_max:
+    value: 0.024582142010331154
+  
+  num_classes:
+    value: 6
+
+  #Preprocessing
   transform_method:
     values: ["hep"] #hep, hzz, hhz, z_scale_min_max, min_max, hep_min_max, hep_min_zscale
   tansform_first: 
@@ -17,11 +28,8 @@ parameters:
     values: [10]
   gamma3: 
     values: [5]
-  hep_variance1:
-    value: 20
-  hep_variance2:
-    value: 20
 
+  #Model
   model_architecture: 
     value: "EfficientNet" # "Swin" ("tiny", "small"), "EfficientNet" ("efficientnet-b3","efficientnet-b0"), "ResNet" ("ResNet34", "ResNet50")
   model_name: 
@@ -33,6 +41,7 @@ parameters:
   img_size:
     value: 300 #check documentation of model for size 224  for most, 300 for efficient
 
+  #Hyperparamer and Training Components
   optimizer: 
     value: "ADAM" # "ADAM" "ADAMW" "SGD"
   scheduler: 
@@ -58,6 +67,8 @@ parameters:
     #max: 0.01
   dropout:
     values: [0.4]
+  batch_size:
+    value: 32
 
   num_epochs_lastlayer:
     value: 15
@@ -72,16 +83,14 @@ parameters:
   device:
     value: "cuda"
 
+  #Logging
   enable_logging:
     value: True # enable logging to WandB
   run_on_cluster:
     value: True # change configs to run on cluster
   random_seed:
     value: 42
-  num_classes:
-    value: 6
-  batch_size:
-    value: 32
+
 
 
 

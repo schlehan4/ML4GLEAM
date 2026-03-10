@@ -17,10 +17,10 @@ def objective(config):
     print("Starting new experiment...")
 
     # datapaths
-    dest_path = f"/scratch/schlehan/jobs/sweep/"  # here?
+    dest_path = f"/scratch/schlehan/jobs/sweep/"
     anno_tar = f"{dest_path}/AugementedAnnotations.tar"
     img_tar = f"{dest_path}/AugmentedFITSImages.tar"
-    anno_path = f"{dest_path}/annotations/"  # TODO: correct the schreibfehler when needed, is this a bug?
+    anno_path = f"{dest_path}/annotations/"
     img_path = f"{dest_path}/images/"
     json_path = f"{dest_path}/coco_annotation.json"
 

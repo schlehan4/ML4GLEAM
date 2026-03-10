@@ -176,27 +176,21 @@ class Pipeline:
         :param scheduler: learning rate scheduler, standard -> exponential
         :return:
         """
-        if self.config.reg_type == "L1" or self.config.reg_type == "both":
-            self.train=train_func
-            print("train function set L1")
-        elif self.config.reg_type == "L2" or self.config.reg_type == "none":
-            self.train=train_func
-            print("train function set L2")
-        else:
-            print("no trainfunc found")
+        
+        self.train=train_func
         
         #region Model
         # set model, and put it to device (default = cuda)
         if self.config.model_architecture == "EfficientNet":
             model = EfficientNet.from_pretrained(self.config.model_name)
-            model = RGZ_SmallHead(model, in_features=self.config.in_features, num_classes=6, dropout_rate=self.config.dropout)
+            model = RGZ_SmallHead(model, in_features=self.config.in_features, num_classes=self.config.num_classes, dropout_rate=self.config.dropout)
         elif self.config.model_architecture == "ResNet":
             if self.config.model_name == "ResNet34":
                 model = models.resnet34(weights=ResNet34_Weights.IMAGENET1K_V1)
-                model = RGZ_ResNet34Head(model, in_features=512, num_classes=6, dropout_rate=0.5)
+                model = RGZ_ResNet34Head(model, in_features=512, num_classes=self.config.num_classes, dropout_rate=self.config.dropout)
             if self.config.model_name == "ResNet50":
                 model = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
-                model = RGZ_ResNet50Head(model, in_features=2048, num_classes=6, dropout_rate=self.config.dropout)
+                model = RGZ_ResNet50Head(model, in_features=2048, num_classes=self.config.num_classes, dropout_rate=self.config.dropout)
         elif self.config.model_architecture == "Swin":
             if self.config.model_name == "tiny":
                 model = models.swin_t(weights=models.Swin_T_Weights.IMAGENET1K_V1)
@@ -265,7 +259,7 @@ class Pipeline:
         
         # load the dataset, here cifar 10
         # use the coco or fits dataloader here later -> schlehan's code
-        dataset = FitsSet(img_path, json_path,order=self.config.tansform_first, gamma=[self.config.gamma1, self.config.gamma2, self.config.gamma3], hep_variance=[self.config.hep_variance1, self.config.hep_variance2], transform_method=self.config.transform_method, transform=transform)
+        dataset = FitsSet(img_path, json_path,order=self.config.tansform_first, gamma=[self.config.gamma1, self.config.gamma2, self.config.gamma3], transform_method=self.config.transform_method, glob_min=self.config.glob_min, glob_max=self.config.glob_max, transform=transform)
             
         # set dataset
         self.dataset = dataset
