@@ -1,0 +1,61 @@
+#!/bin/bash
+#SBATCH --time=4310
+#SBATCH --job-name=LPIPS_2AFC
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=1
+#SBATCH --account=cai_ivs
+#SBATCH --partition=gpu
+#SBATCH --output=/cluster/home/schlehan/temp/%j_%N__RNN.out
+#SBATCH --error=/cluster/home/schlehan/temp/%j_%N__RNN.err
+
+
+echo "Prepare job..."
+mkdir -p /scratch/schlehan/jobs/run && cd /scratch/schlehan/jobs/run
+# cleanup the old files from last job
+# rm -rf ML4GLEAM/ AugementedAnnotations.tar AugmentedFITSImages.tar
+# copy all the stuff in your persistent_scratch working dir
+cp -r /cluster/home/schlehan/SchlehansAugmentedDatasets/AugementedAnnotations.tar .
+cp -r /cluster/home/schlehan/SchlehansAugmentedDatasets/AugmentedFITSImages.tar .
+echo "Data copied for RGZ (clean)..."
+# copy the actual repo
+cp -r /cluster/home/schlehan/ML4GLEAM/ .
+echo "git repo copied..."
+
+cd /scratch/schlehan/jobs/sweep/ML4GLEAM/src/image_classification/schlehan/schlehans_piepeline
+
+echo "Preparation finished..."
+echo "You're ready to go now!"
+
+
+env_name="ML4GLEAM"
+venv_base_dir="/raid/persistent_scratch/schlehan/venvs/"
+venv_path="$venv_base_dir/$env_name"
+
+# create venv base dir if it does not exist
+mkdir -p /raid/persistent_scratch/schlehan/venvs/
+
+
+if [ -d "$venv_path" ]; then
+    echo "Virtual environment ($env_name) found. Activating..."
+    unset PIP_TARGET
+    unset PYTHONPATH
+    source "$venv_path/bin/activate"
+    pip install --upgrade pip
+    pip install -r /scratch/schlehan/jobs/sweep/ML4GLEAM/src/requirements_venv/requirements.txt
+else
+    echo "Virtual environment ($env_name) not found. Creating..."
+    module load python/3.11.9
+    virtualenv $venv_path
+    # added from ex06, git repo from denp
+    unset PIP_TARGET
+    unset PYTHONPATH
+    source "$venv_path/bin/activate"
+    pip install --upgrade pip
+    pip install -r /scratch/schlehan/jobs/sweep/ML4GLEAM/src/requirements_venv/requirements.txt
+fi
+
+export PYTHONPATH=/scratch/schlehan/jobs/sweep/ML4GLEAM/src:$PYTHONPATH
+
+python3 -u /scratch/schlehan/jobs/sweep/ML4GLEAM/src/image_classification/schlehan/schlehans_piepeline/sweep_schlehan.py

@@ -1,0 +1,39 @@
+wandb:
+  project: "FirstExperiments-WandB"
+  entity: "PABA-ML4GLEAM"
+  # run_name: "experiment-resnet18"
+  description: "Testen der pipeline mit ResNet18 auf CIFAR-10"
+
+experiment:
+  enable_logging: True # enable logging to WandB
+  run_on_cluster: True # change configs to run on cluster
+  random_seed: 42
+
+dataset:
+  name: "CIFAR-10"
+  num_classes: 10
+  batch_size: 32
+  data_augmentation: ["Standard Transform Function"]
+
+model:
+  name: "ResNet18"
+  architecture: "ResNet"
+  activation_function: "NotDefined"
+  dropout: "None"
+
+training:
+  num_epochs_lastlayer: 5
+  num_epochs_finetune: 10
+
+
+  learning_rate: 0.015
+  momentum: 0.91
+  betas: [0.9, 0.999]
+  eps: 1e-08
+  weight_decay: 0.01
+  l1_lambda: 0.001
+
+  scheduler:
+    gamma: 0.9
+  device: "cuda"
+

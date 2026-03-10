@@ -1,0 +1,38 @@
+wandb:
+  project: "Efficient Test"
+  entity: "PABA-ML4GLEAM"
+  # run_name: "experiment-resnet18"
+  description: "Testen der pipeline mit ResNet und Radio Galaxy Zoo"
+
+experiment:
+  enable_logging: True # enable logging to WandB
+  run_on_cluster: True # change configs to run on cluster
+  random_seed: 42
+
+dataset:
+  name: "Radio Galaxy Zoo"
+  num_classes: 6
+  batch_size: 32
+  data_augmentation: "rotate,flip,normalizations (bspw. HEP)"
+
+model:
+  name: "ResNet50"
+  architecture: "ResNet"
+  activation_function: "Head_relu"
+  dropout: "Head"
+
+training:
+  num_epochs_lastlayer: 20
+  num_epochs_finetune: 60
+
+  learning_rate: 0.002
+  momentum: 0.95
+  betas: [0.9, 0.999]
+  eps: 1e-08
+  weight_decay: 0.02
+  l1_lambda: 0.0001
+
+  scheduler:
+    gamma: 0.99
+  device: "cuda"
+

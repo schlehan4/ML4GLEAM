@@ -1,0 +1,90 @@
+
+method: "grid"  # "grid" oder "bayes" sind auch möglich
+metric:
+  goal: "maximize"
+  name: "score"
+
+parameters:
+
+  transform_method:
+    values: ["hep"] #hep,hzz, hhz, z_scale_min_max
+  tansform_first: 
+    value: False
+  gamma1:
+    values: [5]
+  gamma2:
+    values: [10]
+  gamma3: 
+    values: [5]
+    
+  hep_variance1:
+    value: 6
+  hep_variance2:
+    value: 6
+
+    
+  model_architecture: 
+    value: "EfficientNet"
+  model_name: 
+    value: "efficientnet-b3"
+  activation_function: 
+    value: "NotDefined"
+  in_features: 
+    value: 1536
+  img_size:
+    value: 300
+
+  optimizer: 
+    value: "ADAM"
+  scheduler: 
+    value: "plateau"
+
+  learning_rate:
+    value: 0.00025
+    #min: 0.0001
+    #max: 0.001
+  learingn_rate_div:
+    value: 0.1
+  reg_type: 
+    value: "L1"
+  l1lambda:
+    values: [0.0]
+    #min: 0.0001
+    #max: 0.001
+  weight_decay:
+    values: [0.0001024]
+    # distribution: "log_uniform_values"
+    # min: 0.0001
+    # max: 0.1
+  dropout:
+    values: [0.4]
+
+  num_epochs_lastlayer:
+    value: 1
+  num_epochs_finetune:
+    value: 1
+  momentum:
+    value:  0.91
+  betas:
+    value: [0.9, 0.999]
+  eps:
+    value: 1e-08
+  device:
+    value: "cuda"
+
+  enable_logging:
+    value: True # enable logging to WandB
+  run_on_cluster:
+    value: True # change configs to run on cluster
+  random_seed:
+    value: 42
+  num_classes:
+    value: 6
+  batch_size:
+    value: 32
+
+
+
+
+
+

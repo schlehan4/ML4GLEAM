@@ -1,0 +1,48 @@
+method: "bayes"  # "grid" oder "bayes" sind auch möglich
+metric:
+  goal: "maximize"
+  name: "score"
+
+parameters:
+  learning_rate:
+    distribution: "log_uniform_values"
+    min: 0.0001
+    max: 0.01
+  l1lambda:
+    min: 0.00005
+    max: 0.001
+  weight_decay:
+    min: 0.0
+    max: 0.03
+  dropout:
+    values: [0.3, 0.4, 0.5]
+
+  num_epochs_lastlayer:
+    value: 15
+  num_epochs_finetune:
+    value: 40
+  momentum:
+    value:  0.91
+  betas:
+    value: [0.9, 0.999]
+  eps:
+    value: 1e-08
+  device:
+    value: "cuda"
+
+  enable_logging:
+    value: True # enable logging to WandB
+  run_on_cluster:
+    value: True # change configs to run on cluster
+  random_seed:
+    value: 42
+  num_classes:
+    value: 6
+  batch_size:
+    value: 32
+
+
+
+
+
+

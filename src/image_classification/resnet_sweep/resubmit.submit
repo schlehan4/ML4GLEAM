@@ -1,0 +1,141 @@
+#!/bin/bash
+#SBATCH --time=7200
+#SBATCH --job-name=ResNet_RGZ_Sweep
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=1
+#SBATCH --account=cai_ivs
+#SBATCH --partition=gpu
+#SBATCH --output=/cluster/home/schlehan/temp/%j_%N__RNN.out
+#SBATCH --error=/cluster/home/schlehan/temp/%j_%N__RNN.err
+#SBATCH --signal=B:SIGUSR1@60
+#SBATCH --nodelist=sandiego
+
+
+
+# ----------------------------------------------------------------------------------
+# Prepare directories
+# ----------------------------------------------------------------------------------
+
+HOME_DIR_PATH="/cluster/home/schlehan/tutorial_results"
+SCRATCH_DIR_PATH="/scratch/outputs/"
+
+mkdir -p $SCRATCH_DIR_PATH
+mkdir -p $HOME_DIR_PATH
+
+# ----------------------------------------------------------------------------------
+# Stop signal handler
+# ----------------------------------------------------------------------------------
+
+sig_handler_USR1()
+{
+    echo "++++++++++++++++++++++++++++++++++++++"
+    echo "STOP SIGNAL DETECTED -  `date`"
+    echo "++++++++++++++++++++++++++++++++++++++"
+
+    echo Backup files from $SCRATCH_DIR_PATH to $HOME_DIR_PATH.
+    cp -r $SCRATCH_DIR_PATH* $HOME_DIR_PATH
+    sleep 1
+
+    most_recent_chp=$(ls -t $HOME_DIR_PATH/ex14_checkpoint_*.pth | head -n 1)
+    echo "Most recent checkpoint: $most_recent_chp"
+    sleep 1
+    sbatch "$0" $most_recent_chp
+    sleep 1
+    exit 0
+}
+
+trap 'sig_handler_USR1' USR1
+
+# ----------------------------------------------------------------------------------
+# print executing hostname and date
+# ----------------------------------------------------------------------------------
+hostname
+script_start=$(date +%s.%N)
+
+# ----------------------------------------------------------------------------------
+# Set up virtual environment
+# ----------------------------------------------------------------------------------
+
+env_name="ML4GLEAM"
+venv_base_dir="/raid/persistent_scratch/schlehan/venvs/"
+venv_path="$venv_base_dir/$env_name"
+
+mkdir -p /raid/persistent_scratch/schlehan/venvs/
+
+module load python/3.11.9
+
+if [ -d "$venv_path" ]; then
+    echo "Virtual environment ($env_name) found. Activating..."
+    unset PIP_TARGET
+    unset PYTHONPATH
+    source "$venv_path/bin/activate"
+else
+    echo "Virtual environment ($env_name) not found. Creating..."
+    virtualenv "$venv_path"
+    unset PIP_TARGET
+    unset PYTHONPATH
+    source "$venv_path/bin/activate"
+fi
+
+# ----------------------------------------------------------------------------------
+# Check and update required packages
+# ----------------------------------------------------------------------------------
+declare -A packages
+while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%%#*}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+    if [[ "$line" =~ ^[a-zA-Z0-9_(\-\.)]+==([1-9][0-9]*!)?(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$ ]]; then
+        IFS='==' read -r package version <<< "${line/==/==}"
+        version=${version#=}
+        packages[$package]=$version
+    else
+        echo "Ignoring invalid line: $line"
+    fi
+done < /cluster/home/schlehan/ML4GLEAM/src/requirements_venv/requirements.txt
+
+for package in "${!packages[@]}"; do
+    version=${packages[$package]}
+    installed_version=$(pip3 show $package | grep "Version:" | cut -d' ' -f2)
+    if [ -z "$installed_version" ]; then
+        echo "Installing $package==$version..."
+        pip3 install "$package==$version"
+    elif [ "$installed_version" != "$version" ]; then
+        echo "$package is installed but version $installed_version is not the required version $version. Updating..."
+        pip3 install "$package==$version"
+    fi
+done
+
+export PYTHONPATH=/cluster/home/schlehan/ML4GLEAM/src:$PYTHONPATH
+
+# ----------------------------------------------------------------------------------
+# Run training
+# ----------------------------------------------------------------------------------
+
+if [ $# -eq 0 ]; then
+  echo "No arguments provided. Train as usual."
+  python3 -u /raid/persistent_scratch/schlehan/jobs/fits_test/ML4GLEAM/src/image_classification/schlehan/resnet_sweep/sweep_schlehan.py &
+else
+  echo "Argument provided, start training from checkpoint: $1"
+  cp $1 $SCRATCH_DIR_PATH
+  sleep 1
+  filename=$(basename "$1")
+  checkpoint_path="${SCRATCH_DIR_PATH}${filename}"
+  python3 -u /raid/persistent_scratch/schlehan/jobs/fits_test/ML4GLEAM/src/image_classification/schlehan/resnet_sweep/sweep_schlehan.py --checkpoint $checkpoint_path &
+fi
+
+wait
+
+# ----------------------------------------------------------------------------------
+# Copy important files back to home dir
+# ----------------------------------------------------------------------------------
+cp -r $SCRATCH_DIR_PATH* $HOME_DIR_PATH
+
+end=$(date +%s.%N)
+script_time=$(echo "$end - $script_start" | bc)
+echo "Script execution time: $script_time seconds"
+
+# Allow time to check scratch directory before cleanup
+sleep 60
