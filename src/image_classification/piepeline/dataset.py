@@ -9,7 +9,23 @@ from shared.dataset.scaling_functions import *
 #coco_path = "./data/coco_annotation.json"
 
 class CocoLoader(Dataset):
+    
+    """
+    PyTorch Dataset for loading images and labels from a COCO-style annotation file.
+    """
     def __init__(self, img_folder, annotation_file, transform=None):
+        """
+        Initialize
+
+        Parameters
+        ----------
+        img_folder : str
+            Path to the directory containing the images.
+        annotation_file : str
+            Path to the COCO-style JSON annotation file.
+        transform : callable, optional
+            Transformation to apply to the loaded images.
+        """
         self.img_folder = img_folder
         self.transform = transform
         
@@ -29,6 +45,15 @@ class CocoLoader(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, index):
+        """
+        Retrieve image and label.
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - image
+            - label
+        """
         image_id, category_id = self.annotations[index]
         image_filename = self.image_id_to_filename[image_id]
         image_path = os.path.join(self.img_folder, image_filename)
@@ -63,7 +88,7 @@ class FitsSet(Dataset):
             image_id = ann["image_id"]
             category_id = ann["category_id"]
             
-            # 50 % der Kategorie 1-Bilder ausschließen
+            # 35 % der Kategorie 1-Bilder ausschließen
             """if category_id == 1 and random.random() < 0.35:
                 continue"""
             image_filename = self.image_id_to_filename[image_id]
